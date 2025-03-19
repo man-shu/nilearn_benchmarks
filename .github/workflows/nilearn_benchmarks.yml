@@ -1,0 +1,32 @@
+name: Run and deploy Nilearn benchmarks
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  benchmark:
+    if: contains(github.event.head_commit.message, '[run-benchmark]')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v3
+      - name: Install asv
+        run: |
+          pip install --upgrade pip
+          pip install asv
+      - name: Run benchmarks
+        run: |
+          asv machine --yes
+          asv run
+      - name: Create html with all results
+        run: |
+          asv publish
+      - name: Deploy
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          publish_branch: gh-pages
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: html
+          force_orphan: true
