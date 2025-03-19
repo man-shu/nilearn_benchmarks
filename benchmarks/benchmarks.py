@@ -16,17 +16,22 @@ class Loading(Benchmark):
     disk using nibabel and nilearn.
     """
 
-    def time_nilearn_load_img(self):
-        load_img("fmri.nii.gz")
+    param_names = ["loader"]
+    params = ["nilearn", "nibabel (ref)"]
 
-    def time_nib_load(self):
-        nib.load("fmri.nii.gz")
+    def time_loading(self, params):
+        loader = params
+        if loader == "nilearn":
+            load_img("fmri.nii.gz")
+        elif loader == "nibabel (ref)":
+            nib.load("fmri.nii.gz")
 
-    def peakmem_nilearn_load_img(self):
-        load_img("fmri.nii.gz")
-
-    def peakmem_nib_load(self):
-        nib.load("fmri.nii.gz")
+    def peakmem_loading(self, params):
+        loader = params
+        if loader == "nilearn":
+            load_img("fmri.nii.gz")
+        elif loader == "nibabel (ref)":
+            nib.load("fmri.nii.gz")
 
 
 class Mean(Benchmark):
@@ -35,20 +40,25 @@ class Mean(Benchmark):
     of a 4D image using nibabel and nilearn.
     """
 
-    def time_nilearn_mean_img(self):
-        img = load_img("fmri.nii.gz")
+    param_names = ["loader"]
+    params = ["nilearn", "nibabel (ref)"]
+
+    def time_mean(self, params):
+        loader = params
+        if loader == "nilearn":
+            img = load_img("fmri.nii.gz")
+        elif loader == "nibabel (ref)":
+            img = nib.load("fmri.nii.gz")
+
         mean_img(img, copy_header=True)
 
-    def time_nib_mean(self):
-        img = nib.load("fmri.nii.gz")
-        mean_img(img, copy_header=True)
+    def peakmem_mean(self, params):
+        loader = params
+        if loader == "nilearn":
+            img = load_img("fmri.nii.gz")
+        elif loader == "nibabel (ref)":
+            img = nib.load("fmri.nii.gz")
 
-    def peakmem_nilearn_mean_img(self):
-        img = load_img("fmri.nii.gz")
-        mean_img(img, copy_header=True)
-
-    def peakmem_nib_mean(self):
-        img = nib.load("fmri.nii.gz")
         mean_img(img, copy_header=True)
 
 
@@ -58,78 +68,65 @@ class Slicing(Benchmark):
     using nibabel and nilearn.
     """
 
-    def time_nilearn_slice_img(self):
-        img = load_img("fmri.nii.gz")
+    param_names = ["loader"]
+    params = ["nilearn", "nibabel (ref)"]
+
+    def time_slicing(self, params):
+        loader = params
+        if loader == "nilearn":
+            img = load_img("fmri.nii.gz")
+        elif loader == "nibabel (ref)":
+            img = nib.load("fmri.nii.gz")
+
         img.dataobj[..., 0]
 
-    def time_nib_slice(self):
-        img = nib.load("fmri.nii.gz")
-        img.dataobj[..., 0]
+    def peakmem_slicing(self, params):
+        loader = params
+        if loader == "nilearn":
+            img = load_img("fmri.nii.gz")
+        elif loader == "nibabel (ref)":
+            img = nib.load("fmri.nii.gz")
 
-    def peakmem_nilearn_slice_img(self):
-        img = load_img("fmri.nii.gz")
-        img.dataobj[..., 0]
-
-    def peakmem_nib_slice(self):
-        img = nib.load("fmri.nii.gz")
         img.dataobj[..., 0]
 
 
-class NiftiMasking(Benchmark):
+class Masking(Benchmark):
     """
     An example benchmark that measures the performance of applying a mask to
-    an image using nilearn.
+    an image using numpy and nilearn.
     """
 
-    def time_path_nifti_masker(self):
-        NiftiMasker(mask_img="mask.nii.gz").fit_transform("fmri.nii.gz")
+    param_names = ["implementation", "loader"]
+    params = (["nilearn", "numpy (ref)"], ["nilearn", "nibabel (ref)"])
 
-    def time_nilearn_nifti_masker(self):
-        mask_img = load_img("mask.nii.gz")
-        img = load_img("fmri.nii.gz")
-        NiftiMasker(mask_img=mask_img).fit_transform(img)
+    def time_masker(self, params):
+        implementation, loader = params
+        if loader == "nilearn":
+            mask = load_img("mask.nii.gz")
+            img = load_img("fmri.nii.gz")
+        elif loader == "nibabel (ref)":
+            mask = nib.load("mask.nii.gz")
+            img = nib.load("fmri.nii.gz")
 
-    def time_nib_nifti_masker(self):
-        mask_img = nib.load("mask.nii.gz")
-        img = nib.load("fmri.nii.gz")
-        NiftiMasker(mask_img=mask_img).fit_transform(img)
+        if implementation == "nilearn":
+            NiftiMasker(mask_img=mask).fit_transform(img)
+        elif implementation == "numpy (ref)":
+            mask = np.asarray(mask.dataobj).astype(bool)
+            img = np.asarray(img.dataobj)
+            img[mask]
 
-    def peakmem_path_nifti_masker(self):
-        NiftiMasker(mask_img="mask.nii.gz").fit_transform("fmri.nii.gz")
+    def peakmem_masker(self, params):
+        implementation, loader = params
+        if loader == "nilearn":
+            mask = load_img("mask.nii.gz")
+            img = load_img("fmri.nii.gz")
+        elif loader == "nibabel (ref)":
+            mask = nib.load("mask.nii.gz")
+            img = nib.load("fmri.nii.gz")
 
-    def peakmem_nilearn_nifti_masker(self):
-        mask_img = load_img("mask.nii.gz")
-        img = load_img("fmri.nii.gz")
-        NiftiMasker(mask_img=mask_img).fit_transform(img)
-
-    def peakmem_nib_nifti_masker(self):
-        mask_img = nib.load("mask.nii.gz")
-        img = nib.load("fmri.nii.gz")
-        NiftiMasker(mask_img=mask_img).fit_transform(img)
-
-
-class NumpyMasking(Benchmark):
-    """
-    An example benchmark that measures the performance of applying a mask to
-    an image using numpy.
-    """
-
-    def time_nilearn_numpy_masker(self):
-        mask = np.asarray(load_img("mask.nii.gz").dataobj).astype(bool)
-        img = np.asarray(load_img("fmri.nii.gz").dataobj)
-        img[mask]
-
-    def time_nib_numpy_masker(self):
-        mask = np.asarray(nib.load("mask.nii.gz").dataobj).astype(bool)
-        img = np.asarray(nib.load("fmri.nii.gz").dataobj)
-        img[mask]
-
-    def peakmem_nilearn_numpy_masker(self):
-        mask = np.asarray(load_img("mask.nii.gz").dataobj).astype(bool)
-        img = np.asarray(load_img("fmri.nii.gz").dataobj)
-        img[mask]
-
-    def peakmem_nib_numpy_masker(self):
-        mask = np.asarray(nib.load("mask.nii.gz").dataobj).astype(bool)
-        img = np.asarray(nib.load("fmri.nii.gz").dataobj)
-        img[mask]
+        if implementation == "nilearn":
+            NiftiMasker(mask_img=mask).fit_transform(img)
+        elif implementation == "numpy (ref)":
+            mask = np.asarray(mask.dataobj).astype(bool)
+            img = np.asarray(img.dataobj)
+            img[mask]
