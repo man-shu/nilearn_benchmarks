@@ -19,7 +19,7 @@ jobs:
       - name: Run benchmarks
         run: |
           asv machine --yes
-          asv run
+          asv run -v
       - name: Create html with all results
         run: |
           asv publish
