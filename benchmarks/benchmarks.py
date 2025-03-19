@@ -99,8 +99,7 @@ class Masking(Benchmark):
     param_names = ["implementation", "loader"]
     params = (["nilearn", "numpy (ref)"], ["nilearn", "nibabel (ref)"])
 
-    def time_masker(self, params):
-        implementation, loader = params
+    def time_masker(self, implementation, loader):
         if loader == "nilearn":
             mask = load_img("mask.nii.gz")
             img = load_img("fmri.nii.gz")
@@ -115,8 +114,7 @@ class Masking(Benchmark):
             img = np.asarray(img.dataobj)
             img[mask]
 
-    def peakmem_masker(self, params):
-        implementation, loader = params
+    def peakmem_masker(self, implementation, loader):
         if loader == "nilearn":
             mask = load_img("mask.nii.gz")
             img = load_img("fmri.nii.gz")
