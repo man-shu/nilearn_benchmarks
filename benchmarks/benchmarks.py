@@ -59,7 +59,8 @@ class MeanSuite:
 
 class SliceSuite:
     """
-    An example benchmark that measures the performance of slicing a 4D image using nibabel and nilearn.
+    An example benchmark that measures the performance of slicing a 4D image
+    using nibabel and nilearn.
     """
 
     def setup_cache(self):
