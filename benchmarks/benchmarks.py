@@ -19,15 +19,13 @@ class Loading(Benchmark):
     param_names = ["loader"]
     params = ["nilearn", "nibabel (ref)"]
 
-    def time_loading(self, params):
-        loader = params
+    def time_loading(self, loader):
         if loader == "nilearn":
             load_img("fmri.nii.gz")
         elif loader == "nibabel (ref)":
             nib.load("fmri.nii.gz")
 
-    def peakmem_loading(self, params):
-        loader = params
+    def peakmem_loading(self, loader):
         if loader == "nilearn":
             load_img("fmri.nii.gz")
         elif loader == "nibabel (ref)":
@@ -43,8 +41,7 @@ class Mean(Benchmark):
     param_names = ["loader"]
     params = ["nilearn", "nibabel (ref)"]
 
-    def time_mean(self, params):
-        loader = params
+    def time_mean(self, loader):
         if loader == "nilearn":
             img = load_img("fmri.nii.gz")
         elif loader == "nibabel (ref)":
@@ -52,8 +49,7 @@ class Mean(Benchmark):
 
         mean_img(img, copy_header=True)
 
-    def peakmem_mean(self, params):
-        loader = params
+    def peakmem_mean(self, loader):
         if loader == "nilearn":
             img = load_img("fmri.nii.gz")
         elif loader == "nibabel (ref)":
@@ -71,8 +67,7 @@ class Slicing(Benchmark):
     param_names = ["loader"]
     params = ["nilearn", "nibabel (ref)"]
 
-    def time_slicing(self, params):
-        loader = params
+    def time_slicing(self, loader):
         if loader == "nilearn":
             img = load_img("fmri.nii.gz")
         elif loader == "nibabel (ref)":
@@ -80,8 +75,7 @@ class Slicing(Benchmark):
 
         img.dataobj[..., 0]
 
-    def peakmem_slicing(self, params):
-        loader = params
+    def peakmem_slicing(self, loader):
         if loader == "nilearn":
             img = load_img("fmri.nii.gz")
         elif loader == "nibabel (ref)":
