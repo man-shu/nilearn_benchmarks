@@ -28,7 +28,7 @@ jobs:
         if: steps.cache.outputs.cache-hit != 'true'
         run: |
           asv machine --yes
-          asv run -v --append
+          asv run -ev --append
       - name: Create html with all results
         run: |
           asv publish
