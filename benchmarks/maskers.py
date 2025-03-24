@@ -6,6 +6,34 @@ from nilearn.image import load_img
 import nibabel as nib
 import numpy as np
 from .common import Benchmark
+from joblib import Parallel, delayed
+
+
+def loader(loader, n_masks=1, n_subjects=10):
+    loader_to_func = {
+        "nilearn": load_img,
+        "nibabel (ref)": nib.load,
+    }
+    loading_func = loader_to_func[loader]
+    if n_masks < 1:
+        raise ValueError("Number of masks must be at least 1.")
+    elif n_masks == 1:
+        return loading_func("mask.nii.gz"), loading_func(
+            f"fmri_{n_subjects}.nii.gz"
+        )
+    else:
+        return [
+            loading_func(f"mask_{idx}.nii.gz") for idx in range(1, n_masks + 1)
+        ], loading_func(f"fmri_{n_subjects}.nii.gz")
+
+
+def apply_mask(mask, img, implementation):
+    if implementation == "nilearn":
+        NiftiMasker(mask_img=mask).fit_transform(img)
+    elif implementation == "numpy":
+        mask = np.asarray(mask.dataobj).astype(bool)
+        img = np.asarray(img.dataobj)
+        img[mask]
 
 
 class NiftiMaskingVsReference(Benchmark):
@@ -24,34 +52,40 @@ class NiftiMaskingVsReference(Benchmark):
     )
 
     def time_masker(self, implementation, loader):
-        if loader == "nilearn":
-            mask = load_img("mask.nii.gz")
-            img = load_img("fmri.nii.gz")
-        elif loader == "nibabel (ref)":
-            mask = nib.load("mask.nii.gz")
-            img = nib.load("fmri.nii.gz")
-
-        if implementation == "nilearn":
-            NiftiMasker(mask_img=mask).fit_transform(img)
-        elif implementation == "numpy (ref)":
-            mask = np.asarray(mask.dataobj).astype(bool)
-            img = np.asarray(img.dataobj)
-            img[mask]
+        mask, img = loader(loader)
+        apply_mask(mask, img, implementation)
 
     def peakmem_masker(self, implementation, loader):
-        if loader == "nilearn":
-            mask = load_img("mask.nii.gz")
-            img = load_img("fmri.nii.gz")
-        elif loader == "nibabel (ref)":
-            mask = nib.load("mask.nii.gz")
-            img = nib.load("fmri.nii.gz")
+        mask, img = loader(loader)
+        apply_mask(mask, img, implementation)
 
-        if implementation == "nilearn":
-            NiftiMasker(mask_img=mask).fit_transform(img)
-        elif implementation == "numpy (ref)":
-            mask = np.asarray(mask.dataobj).astype(bool)
-            img = np.asarray(img.dataobj)
-            img[mask]
+
+class ParallelNiftiMaskingVsReference(Benchmark):
+    """
+    Comparison between the performance of applying several masks to an
+    image by parallelizing nilearn masker objects vs. using numpy
+    """
+
+    param_names = [
+        "implementation",
+        "loader",
+    ]
+    params = (
+        ["nilearn", "numpy (ref)"],
+        ["nilearn", "nibabel (ref)"],
+    )
+
+    def time_masker(self, implementation, loader):
+        masks, img = loader(loader, n_masks=10)
+        Parallel(n_jobs=10)(
+            delayed(apply_mask)(mask, img, implementation) for mask in masks
+        )
+
+    def peakmem_masker(self, implementation, loader):
+        masks, img = loader(loader, n_masks=10)
+        Parallel(n_jobs=10)(
+            delayed(apply_mask)(mask, img, implementation) for mask in masks
+        )
 
 
 class NiftiMasking(Benchmark):
