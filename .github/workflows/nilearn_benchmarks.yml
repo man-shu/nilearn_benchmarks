@@ -7,7 +7,7 @@ on:
 
 jobs:
   benchmark:
-    if: contains(github.event.head_commit.message, '[run-benchmark]')
+    if: contains(github.event.head_commit.message, '[bm]')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
