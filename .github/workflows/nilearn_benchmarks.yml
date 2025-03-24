@@ -31,7 +31,6 @@ jobs:
           asv setup --verbose
       - name: Run benchmarks
         run: |
-          asv machine --yes
           asv run -ev --append
       - name: Create html with all results
         run: |
