@@ -16,10 +16,19 @@ jobs:
         run: |
           pip install --upgrade pip
           pip install asv
+      - name: Cache the env and results dirs from next steps
+        id: cache
+        uses: actions/cache@v2
+        with: 
+          path: |
+            ./env
+            ./results
+          key: ${{ runner.os }}-asv-${{ hashFiles('asv.conf.json') }}
       - name: Run benchmarks
+        if: steps.cache.outputs.cache-hit != 'true'
         run: |
           asv machine --yes
-          asv run --verbose --append-samples
+          asv run -v --append
       - name: Create html with all results
         run: |
           asv publish
