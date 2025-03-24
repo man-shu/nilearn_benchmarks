@@ -27,9 +27,14 @@ def loader(loader, n_masks=1, n_subjects=10):
         ], loading_func(f"fmri_{n_subjects}.nii.gz")
 
 
-def apply_mask(mask, img, implementation):
+def apply_mask(mask, img, implementation, nifti_masker_params=None):
     if implementation == "nilearn":
-        NiftiMasker(mask_img=mask).fit_transform(img)
+        if nifti_masker_params is None:
+            NiftiMasker(mask_img=mask).fit_transform(img)
+        else:
+            masker = NiftiMasker(mask_img=mask)
+            masker.set_params(**nifti_masker_params)
+            masker.fit_transform(img)
     elif implementation == "numpy":
         mask = np.asarray(mask.dataobj).astype(bool)
         img = np.asarray(img.dataobj)
@@ -107,14 +112,17 @@ class NiftiMasking(Benchmark):
         standardize,
         detrend,
     ):
-        mask = load_img("mask.nii.gz")
-        img = load_img("fmri.nii.gz")
-        NiftiMasker(
-            mask_img=mask,
-            smoothing_fwhm=smoothing_fwhm,
-            standardize=standardize,
-            detrend=detrend,
-        ).fit_transform(img)
+        mask, img = loader("nilearn")
+        apply_mask(
+            mask,
+            img,
+            "nilearn",
+            nifti_masker_params={
+                "smoothing_fwhm": smoothing_fwhm,
+                "standardize": standardize,
+                "detrend": detrend,
+            },
+        )
 
     def peakmem_masker(
         self,
@@ -122,12 +130,14 @@ class NiftiMasking(Benchmark):
         standardize,
         detrend,
     ):
-        mask = load_img("mask.nii.gz")
-        img = load_img("fmri.nii.gz")
-
-        NiftiMasker(
-            mask_img=mask,
-            smoothing_fwhm=smoothing_fwhm,
-            standardize=standardize,
-            detrend=detrend,
-        ).fit_transform(img)
+        mask, img = loader("nilearn")
+        apply_mask(
+            mask,
+            img,
+            "nilearn",
+            nifti_masker_params={
+                "smoothing_fwhm": smoothing_fwhm,
+                "standardize": standardize,
+                "detrend": detrend,
+            },
+        )
