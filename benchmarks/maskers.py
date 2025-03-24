@@ -9,7 +9,7 @@ from .common import Benchmark
 from joblib import Parallel, delayed
 
 
-def loader(loader, n_masks=1, n_subjects=10):
+def load(loader, n_masks=1, n_subjects=10):
     loader_to_func = {
         "nilearn": load_img,
         "nibabel (ref)": nib.load,
@@ -18,7 +18,7 @@ def loader(loader, n_masks=1, n_subjects=10):
     if n_masks < 1:
         raise ValueError("Number of masks must be at least 1.")
     elif n_masks == 1:
-        return loading_func("mask.nii.gz"), loading_func(
+        return loading_func("mask_1.nii.gz"), loading_func(
             f"fmri_{n_subjects}.nii.gz"
         )
     else:
@@ -57,11 +57,11 @@ class NiftiMaskingVsReference(Benchmark):
     )
 
     def time_masker(self, implementation, loader):
-        mask, img = loader(loader)
+        mask, img = load(loader)
         apply_mask(mask, img, implementation)
 
     def peakmem_masker(self, implementation, loader):
-        mask, img = loader(loader)
+        mask, img = load(loader)
         apply_mask(mask, img, implementation)
 
 
@@ -81,13 +81,13 @@ class ParallelNiftiMaskingVsReference(Benchmark):
     )
 
     def time_masker(self, implementation, loader):
-        masks, img = loader(loader, n_masks=10)
+        masks, img = load(loader, n_masks=10)
         Parallel(n_jobs=10)(
             delayed(apply_mask)(mask, img, implementation) for mask in masks
         )
 
     def peakmem_masker(self, implementation, loader):
-        masks, img = loader(loader, n_masks=10)
+        masks, img = load(loader, n_masks=10)
         Parallel(n_jobs=10)(
             delayed(apply_mask)(mask, img, implementation) for mask in masks
         )
@@ -112,7 +112,7 @@ class NiftiMasking(Benchmark):
         standardize,
         detrend,
     ):
-        mask, img = loader("nilearn")
+        mask, img = load("nilearn")
         apply_mask(
             mask,
             img,
@@ -130,7 +130,7 @@ class NiftiMasking(Benchmark):
         standardize,
         detrend,
     ):
-        mask, img = loader("nilearn")
+        mask, img = load("nilearn")
         apply_mask(
             mask,
             img,
