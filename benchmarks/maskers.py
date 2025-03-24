@@ -6,7 +6,6 @@ from nilearn.image import load_img
 import nibabel as nib
 import numpy as np
 from .common import Benchmark
-from joblib import Parallel, delayed
 
 
 def load(loader, n_masks=1, n_subjects=10):
@@ -35,6 +34,7 @@ def apply_mask(mask, img, implementation, nifti_masker_params=None):
             masker = NiftiMasker(mask_img=mask)
             masker.set_params(**nifti_masker_params)
             masker.fit_transform(img)
+            print(masker.get_params())
     elif implementation == "numpy":
         mask = np.asarray(mask.dataobj).astype(bool)
         img = np.asarray(img.dataobj)
@@ -63,34 +63,6 @@ class NiftiMaskingVsReference(Benchmark):
     def peakmem_masker(self, implementation, loader):
         mask, img = load(loader)
         apply_mask(mask, img, implementation)
-
-
-class ParallelNiftiMaskingVsReference(Benchmark):
-    """
-    Comparison between the performance of applying several masks to an
-    image by parallelizing nilearn masker objects vs. using numpy
-    """
-
-    param_names = [
-        "implementation",
-        "loader",
-    ]
-    params = (
-        ["nilearn", "numpy (ref)"],
-        ["nilearn", "nibabel (ref)"],
-    )
-
-    def time_masker(self, implementation, loader):
-        masks, img = load(loader, n_masks=10)
-        Parallel(n_jobs=10)(
-            delayed(apply_mask)(mask, img, implementation) for mask in masks
-        )
-
-    def peakmem_masker(self, implementation, loader):
-        masks, img = load(loader, n_masks=10)
-        Parallel(n_jobs=10)(
-            delayed(apply_mask)(mask, img, implementation) for mask in masks
-        )
 
 
 class NiftiMasking(Benchmark):
