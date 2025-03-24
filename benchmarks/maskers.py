@@ -69,8 +69,6 @@ class NiftiMasking(Benchmark):
 
     def time_masker(
         self,
-        implementation,
-        loader,
         smoothing_fwhm,
         standardize,
         detrend,
