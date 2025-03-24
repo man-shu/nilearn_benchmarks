@@ -2,28 +2,8 @@
 # ===========================================================
 
 from nilearn.maskers import NiftiMasker
-from nilearn.image import load_img
-import nibabel as nib
 import numpy as np
-from .common import Benchmark
-
-
-def load(loader, n_masks=1, n_subjects=10):
-    loader_to_func = {
-        "nilearn": load_img,
-        "nibabel (ref)": nib.load,
-    }
-    loading_func = loader_to_func[loader]
-    if n_masks < 1:
-        raise ValueError("Number of masks must be at least 1.")
-    elif n_masks == 1:
-        return loading_func("mask_1.nii.gz"), loading_func(
-            f"fmri_{n_subjects}.nii.gz"
-        )
-    else:
-        return [
-            loading_func(f"mask_{idx}.nii.gz") for idx in range(1, n_masks + 1)
-        ], loading_func(f"fmri_{n_subjects}.nii.gz")
+from .common import Benchmark, load
 
 
 def apply_mask(mask, img, implementation, nifti_masker_params=None):
