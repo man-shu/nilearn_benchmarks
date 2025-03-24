@@ -34,7 +34,6 @@ def apply_mask(mask, img, implementation, nifti_masker_params=None):
             masker = NiftiMasker(mask_img=mask)
             masker.set_params(**nifti_masker_params)
             masker.fit_transform(img)
-            print(masker.get_params())
     elif implementation == "numpy":
         mask = np.asarray(mask.dataobj).astype(bool)
         img = np.asarray(img.dataobj)
