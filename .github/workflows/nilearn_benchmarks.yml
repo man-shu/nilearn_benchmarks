@@ -18,7 +18,7 @@ jobs:
           pip install asv
       - name: Cache the env and results dirs from next steps
         id: cache
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with: 
           path: |
             ./env
