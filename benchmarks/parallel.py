@@ -54,6 +54,9 @@ class ParallelNiftiMaskingVsReference(Benchmark):
         ["nilearn", "nibabel (ref)"],
     )
 
+    def setup_cache(self):
+        Benchmark.setup_cache(self, n_subjects=10, n_masks=10)
+
     def time_masker(self, implementation, loader):
         masks, img = load(loader, n_masks=10)
         Parallel(n_jobs=10)(

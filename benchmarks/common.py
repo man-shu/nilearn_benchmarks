@@ -8,7 +8,7 @@ from nilearn.image import concat_imgs, new_img_like, resample_to_img
 
 class Benchmark:
 
-    def setup_cache(self, n_subjects=10, n_masks=10):
+    def setup_cache(self, n_subjects=10, n_masks=1):
         # get an image
         fmri_data = fetch_adhd(n_subjects=n_subjects)
         concat = concat_imgs(fmri_data.func)
