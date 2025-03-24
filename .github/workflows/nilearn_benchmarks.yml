@@ -24,8 +24,12 @@ jobs:
             ./env
             ./results
           key: ${{ runner.os }}-asv-${{ hashFiles('asv.conf.json') }}
-      - name: Run benchmarks
+      - name: Setup asv
         if: steps.cache.outputs.cache-hit != 'true'
+        run: |
+          asv machine --yes
+          asv setup --verbose
+      - name: Run benchmarks
         run: |
           asv machine --yes
           asv run -ev --append
