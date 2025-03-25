@@ -19,7 +19,7 @@ jobs:
       - name: Setup asv
         run: |
           asv machine --yes
-          asv setup --verbose
+          asv run -ev --append
       - name: Run benchmarks
         run: |
           asv run -ev --append
