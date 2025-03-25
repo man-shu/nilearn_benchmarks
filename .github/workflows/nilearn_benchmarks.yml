@@ -20,7 +20,6 @@ jobs:
         run: |
           asv machine --yes
           asv setup --verbose
-          ls -la
       - name: Run benchmarks
         run: |
           asv run -ev --append
