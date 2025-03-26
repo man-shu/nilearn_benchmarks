@@ -19,7 +19,7 @@ jobs:
       - name: Run benchmarks
         run: |
           asv machine --yes
-          asv run -ev --bench loading
+          asv run 0.10.0..main -ev --date-period 1w
       - name: Create html with all results
         run: |
           asv publish
@@ -30,6 +30,7 @@ jobs:
             ./env
             ./html
             ./results
+          compression-level: 9
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v4
         # If you're changing the branch from main,
