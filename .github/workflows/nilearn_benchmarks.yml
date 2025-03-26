@@ -19,7 +19,7 @@ jobs:
       - name: Run benchmarks
         run: |
           asv machine --yes
-          asv run 0.10.0..main -ev --date-period 1w
+          asv run 0.9.0..main -ev --steps 15
       - name: Create html with all results
         run: |
           asv publish

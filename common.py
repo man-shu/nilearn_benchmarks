@@ -1,6 +1,6 @@
 """Common Benchmarks class that does the setup for the benchmarks."""
 
-from nilearn.datasets import fetch_adhd, fetch_atlas_basc_multiscale_2015
+from nilearn.datasets import fetch_adhd, fetch_atlas_schaefer_2018
 from nilearn.image import concat_imgs, new_img_like, resample_to_img
 
 
@@ -34,12 +34,11 @@ class Benchmark:
         concat.to_filename(f"fmri_{n_subjects}.nii.gz")
 
         # get a mask
-        atlas_path = fetch_atlas_basc_multiscale_2015(resolution=64).maps
+        atlas_path = fetch_atlas_schaefer_2018(n_rois=100).maps
         resampled_atlas = resample_to_img(
             atlas_path,
             concat,
             interpolation="nearest",
-            copy_header=True,
             force_resample=True,
         )
         for idx in range(1, n_masks + 1):
