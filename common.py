@@ -1,34 +1,33 @@
-"""
-Common utilities for the benchmarks.
-"""
+"""Common Benchmarks class that does the setup for the benchmarks."""
 
 from nilearn.datasets import fetch_adhd, fetch_atlas_basc_multiscale_2015
 from nilearn.image import concat_imgs, new_img_like, resample_to_img
-from nilearn.image import load_img
-import nibabel as nib
-
-
-def load(loader, n_masks=1, n_subjects=10):
-    loader_to_func = {
-        "nilearn": load_img,
-        "nibabel (ref)": nib.load,
-    }
-    loading_func = loader_to_func[loader]
-    if n_masks < 1:
-        raise ValueError("Number of masks must be at least 1.")
-    elif n_masks == 1:
-        return loading_func("mask_1.nii.gz"), loading_func(
-            f"fmri_{n_subjects}.nii.gz"
-        )
-    else:
-        return [
-            loading_func(f"mask_{idx}.nii.gz") for idx in range(1, n_masks + 1)
-        ], loading_func(f"fmri_{n_subjects}.nii.gz")
 
 
 class Benchmark:
+    """
+    Base class for the benchmarks. Currently, it only contains a method to
+    setup the cache which is used to store the images and masks used in the
+    benchmarks.
+    """
 
     def setup_cache(self, n_subjects=10, n_masks=1):
+        """Set up the cache directory with the necessary images and masks.
+
+        The fMRI image is created by concatenating n_subjects subject images
+        from :func:`nilearn.datasets.fetch_adhd`. The masks are created by
+        resampling the atlas from
+        :func:`nilearn.datasets.fetch_atlas_basc_multiscale_2015` to the fMRI
+        image and then creating masks for each region in the atlas.
+
+        Parameters
+        ----------
+        n_subjects : int, optional, default=10
+            The number of subject images concatenated together to create the
+            fMRI image.
+        n_masks : int, optional, default=1
+            The number of masks to create.
+        """
         # get an image
         fmri_data = fetch_adhd(n_subjects=n_subjects)
         concat = concat_imgs(fmri_data.func)
