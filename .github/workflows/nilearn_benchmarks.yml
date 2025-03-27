@@ -16,10 +16,13 @@ jobs:
         run: |
           pip install --upgrade pip
           pip install asv
-      - name: Run benchmarks
+      - name: Run tracking benchmarks until 0.9.0
         run: |
           asv machine --yes
-          asv run 0.9.0..main -ev --steps 10 -b tracking
+          asv run 0.9.0..main -ev --steps 30 -b tracking --append-samples
+      - name: Run comparison benchmarks for the latest commit
+        run: |
+          asv run -ev -b comparison --append-samples
       - name: Create html with all results
         run: |
           asv publish
