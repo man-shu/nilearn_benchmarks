@@ -19,7 +19,7 @@ jobs:
       - name: Pull previous results from benchmarks repo on nilearn org
         run: |
           git clone https://github.com/nilearn/benchmarks.git benchmarks_repo
-          cp benchmarks_repo/results .
+          cp -r benchmarks_repo/results .
       - name: Run tracking benchmarks until 0.9.0
         run: |
           asv machine --yes
