@@ -39,7 +39,6 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git clone https://github.com/nilearn/benchmarks.git benchmarks_repo
           cp -r ./results benchmarks_repo/
           cp -r ./html/* benchmarks_repo/
           cd benchmarks_repo
