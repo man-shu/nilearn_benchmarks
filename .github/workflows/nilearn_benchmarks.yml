@@ -37,11 +37,11 @@ jobs:
           compression-level: 9
       - name: Push new results back to benchmarks repo on nilearn org
         run: |
+          cd benchmarks_repo
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          cp -r ./results benchmarks_repo/
-          cp -r ./html/* benchmarks_repo/
-          cd benchmarks_repo
+          cp -r ../results .
+          cp -r ../html/* .
           git add .
           git commit -m "Update benchmark results and HTML [skip ci]"
           git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/nilearn/benchmarks.git
