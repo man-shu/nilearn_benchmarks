@@ -16,13 +16,14 @@ jobs:
         run: |
           pip install --upgrade pip
           pip install asv
+      - name: Pull previous results from benchmarks repo on nilearn org
+        run: |
+          git clone https://github.com/nilearn/benchmarks.git benchmarks_repo
+          cp benchmarks_repo/results .
       - name: Run tracking benchmarks until 0.9.0
         run: |
           asv machine --yes
-          asv run 0.9.0..main -ev --steps 30 -b tracking --append-samples
-      - name: Run comparison benchmarks for the latest commit
-        run: |
-          asv run -ev -b comparison --append-samples
+          asv main -ev --append-samples
       - name: Create html with all results
         run: |
           asv publish
@@ -34,6 +35,17 @@ jobs:
             ./html
             ./results
           compression-level: 9
+      - name: Push new results back to benchmarks repo on nilearn org
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git clone https://github.com/nilearn/benchmarks.git benchmarks_repo
+          cp -r ./results benchmarks_repo/
+          cp -r ./html/* benchmarks_repo/
+          cd benchmarks_repo
+          git add .
+          git commit -m "Update benchmark results and HTML [skip ci]"
+          git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/nilearn/benchmarks.git
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v4
         # If you're changing the branch from main,
