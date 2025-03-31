@@ -34,9 +34,13 @@ jobs:
         run: |
           git clone git@github.com:nilearn/benchmarks.git benchmarks_repo
           cp -r benchmarks_repo/results .
-      - name: Run tracking benchmarks until 0.9.0
+      - name: Get all the machine info
         run: |
           asv machine --yes
+      - name: Edit asv-machine.json to a custom machine name
+        run: python set_machine_name.py fv-az1113-357
+      - name: Run tracking benchmarks until 0.9.0
+        run: |
           asv run -ev --append-samples --machine fv-az1113-357
       - name: Create html with all results
         run: |
