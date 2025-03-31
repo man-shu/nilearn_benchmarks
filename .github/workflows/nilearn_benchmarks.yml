@@ -29,6 +29,8 @@ jobs:
             git config user.name "GitHub Actions"
             git config user.email "actions@github.com"
       - name: Pull previous results from benchmarks repo on nilearn org
+        env:
+              SSH_AUTH_SOCK: /tmp/ssh_agent.sock
         run: |
           git clone git@github.com:nilearn/benchmarks.git benchmarks_repo
           cp -r benchmarks_repo/results .
