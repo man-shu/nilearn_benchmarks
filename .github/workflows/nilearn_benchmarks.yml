@@ -36,8 +36,8 @@ jobs:
           cp -r benchmarks_repo/results .
       - name: Run tracking benchmarks until 0.9.0
         run: |
-          asv machine --machine fv-az1113-357 --yes
-          asv run -ev --append-samples
+          asv machine --yes
+          asv run -ev --append-samples --machine fv-az1113-357
       - name: Create html with all results
         run: |
           asv publish
