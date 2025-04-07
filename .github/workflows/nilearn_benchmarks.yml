@@ -53,7 +53,7 @@ jobs:
             ./html
             ./results
           compression-level: 9
-      - name: Push new results and the log back to benchmarks repo
+      - name: Push new results, logs and webpage back to benchmarks repo
         env:
             SSH_AUTH_SOCK: /tmp/ssh_agent.sock
         run: |
@@ -65,10 +65,6 @@ jobs:
             git add .
             git commit -m "Update benchmark results and logs ($GITHUB_RUN_ID)"
             git push origin main
-      - name: Push html to gh-pages branch
-        env:
-            SSH_AUTH_SOCK: /tmp/ssh_agent.sock
-        run: |
             git checkout gh-pages
             cp -r ../html/* .
             git add .
