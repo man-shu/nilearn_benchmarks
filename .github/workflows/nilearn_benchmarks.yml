@@ -36,12 +36,12 @@ jobs:
           cp -r benchmarks_repo/results .
       - name: Get all the machine info
         run: |
-          asv machine --yes
+          asv machine --yes 2>&1 | tee log_$GITHUB_RUN_ID
       - name: Edit asv-machine.json to a custom machine name
         run: python set_machine_name.py fv-az1113-357
       - name: Run tracking benchmarks until 0.9.0
         run: |
-          asv run -ev --append-samples --machine fv-az1113-357
+          asv run -ev --append-samples --machine fv-az1113-357 2>&1 | tee log_$GITHUB_RUN_ID
       - name: Create html with all results
         run: |
           asv publish
@@ -53,34 +53,13 @@ jobs:
             ./html
             ./results
           compression-level: 9
-      - name: Fetch log for this CI run
-        run: |
-            # Download the current run logs using GitHub API
-            curl -L \
-              -H "Accept: application/vnd.github+json" \
-              -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-              -H "X-GitHub-Api-Version: 2022-11-28" \
-              "https://api.github.com/repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID/logs" \
-              --output workflow_logs.zip
-
-            # Extract the logs
-            mkdir -p workflow_logs
-            unzip -o workflow_logs.zip -d workflow_logs/
-
-            # Create a combined log file
-            cat workflow_logs/* > logs/log_$GITHUB_RUN_ID || echo "Could not concatenate logs"
-
-            # Clean up
-            rm -rf workflow_logs workflow_logs.zip
-
-            echo "Workflow logs downloaded and saved to results directory"
-      - name: Push new results and logs back to benchmarks repo
+      - name: Push new results and the log back to benchmarks repo
         env:
             SSH_AUTH_SOCK: /tmp/ssh_agent.sock
         run: |
             cd benchmarks_repo
             cp -r ../results .
-            cp -r ../logs/log_$GITHUB_RUN_ID ./logs/log_$GITHUB_RUN_ID
+            cp -r ../log_$GITHUB_RUN_ID ./logs/log_$GITHUB_RUN_ID
             git config --global user.name "GitHub Actions"
             git config --global user.email "actions@github.com"
             git add .
@@ -94,7 +73,7 @@ jobs:
             cp -r ../html/* .
             git add .
             git commit -m "Update benchmark HTML ($GITHUB_RUN_ID)"
-            git push origin gh-pages      
+            git push origin gh-pages
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v4
         # If you're changing the branch from main,
