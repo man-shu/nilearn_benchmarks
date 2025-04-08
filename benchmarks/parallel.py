@@ -39,6 +39,22 @@ def apply_mask(mask, img, implementation, nifti_masker_params=None):
         img[mask]
 
 
+def apply_mask_parallel(
+    masks,
+    img,
+    implementation,
+    nifti_masker_params=None,
+    n_jobs=10,
+):
+    """
+    Apply a list of masks to an image in parallel using joblib.
+    """
+    return Parallel(n_jobs=n_jobs)(
+        delayed(apply_mask)(mask, img, implementation, nifti_masker_params)
+        for mask in masks
+    )
+
+
 class ParallelNiftiMaskingVsReference(Benchmark):
     """
     Comparison between the performance of applying several masks to an
@@ -59,12 +75,8 @@ class ParallelNiftiMaskingVsReference(Benchmark):
 
     def time_masker(self, implementation, loader):
         masks, img = load(loader, n_masks=10)
-        Parallel(n_jobs=10)(
-            delayed(apply_mask)(mask, img, implementation) for mask in masks
-        )
+        apply_mask_parallel(masks, img, implementation, n_jobs=10)
 
     def peakmem_masker(self, implementation, loader):
         masks, img = load(loader, n_masks=10)
-        Parallel(n_jobs=10)(
-            delayed(apply_mask)(mask, img, implementation) for mask in masks
-        )
+        apply_mask_parallel(masks, img, implementation, n_jobs=10)
