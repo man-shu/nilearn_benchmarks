@@ -49,7 +49,7 @@ def apply_mask_parallel(
     """
     Apply a list of masks to an image in parallel using joblib.
     """
-    return Parallel(n_jobs=n_jobs)(
+    return Parallel(n_jobs=n_jobs, backend="threading")(
         delayed(apply_mask)(mask, img, implementation, nifti_masker_params)
         for mask in masks
     )
@@ -71,12 +71,20 @@ class ParallelNiftiMaskingVsReference(Benchmark):
     )
 
     def setup_cache(self):
-        Benchmark.setup_cache(self, n_subjects=10, n_masks=10)
+        Benchmark.setup_cache(self, n_subjects=10, n_masks=4)
 
-    def time_masker(self, implementation, loader):
-        masks, img = load(loader, n_masks=10)
-        apply_mask_parallel(masks, img, implementation, n_jobs=10)
+    def time_masker(
+        self,
+        implementation,
+        loader,
+    ):
+        masks, img = load(loader, n_masks=4)
+        apply_mask_parallel(masks, img, implementation, n_jobs=4)
 
-    def peakmem_masker(self, implementation, loader):
-        masks, img = load(loader, n_masks=10)
-        apply_mask_parallel(masks, img, implementation, n_jobs=10)
+    def peakmem_masker(
+        self,
+        implementation,
+        loader,
+    ):
+        masks, img = load(loader, n_masks=4)
+        apply_mask_parallel(masks, img, implementation, n_jobs=4)
