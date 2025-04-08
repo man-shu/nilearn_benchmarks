@@ -8,7 +8,7 @@ on:
 jobs:
   benchmark:
     if: contains(github.event.head_commit.message, '[bm]')
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v3
@@ -16,13 +16,60 @@ jobs:
         run: |
           pip install --upgrade pip
           pip install asv
-      - name: Run benchmarks
+      - name: Add SSH key
+        env:
+            SSH_AUTH_SOCK: /tmp/ssh_agent.sock
         run: |
-          asv machine --yes
-          asv run -v
+            mkdir -p ~/.ssh
+            ssh-keyscan github.com >> ~/.ssh/known_hosts
+            echo "${{ secrets.ACTIONS_SSH_DEPLOY }}" > ~/.ssh/github_actions
+            chmod 600 ~/.ssh/github_actions
+            ssh-agent -a $SSH_AUTH_SOCK > /dev/null
+            ssh-add ~/.ssh/github_actions
+            git config --global user.name "GitHub Actions"
+            git config --global user.email "actions@github.com"
+      - name: Pull previous results from benchmarks repo on nilearn org
+        env:
+              SSH_AUTH_SOCK: /tmp/ssh_agent.sock
+        run: |
+          git clone git@github.com:nilearn/benchmarks.git benchmarks_repo
+          cp -r benchmarks_repo/results .
+      - name: Get all the machine info
+        run: |
+          asv machine --yes 2>&1 | tee log_${{ github.event.repository.updated_at }}_${{ github.run_number }}
+      - name: Edit asv-machine.json to a custom machine name
+        run: python set_machine_name.py fv-az1113-357
+      - name: Run tracking benchmarks until 0.9.0
+        run: |
+          asv run -ev --append-samples --machine fv-az1113-357 2>&1 | tee log_${{ github.event.repository.updated_at }}_${{ github.run_number }}
       - name: Create html with all results
         run: |
           asv publish
+      - uses: actions/upload-artifact@v4
+        with:
+          name: asv_benchmark_results
+          path: |
+            ./env
+            ./html
+            ./results
+          compression-level: 9
+      - name: Push new results, logs and webpage back to benchmarks repo
+        env:
+            SSH_AUTH_SOCK: /tmp/ssh_agent.sock
+        run: |
+            cd benchmarks_repo
+            cp -r ../results .
+            cp -r ../log_${{ github.event.repository.updated_at }} ./logs/log_${{ github.event.repository.updated_at }}_${{ github.run_number }}
+            git config --global user.name "GitHub Actions"
+            git config --global user.email "actions@github.com"
+            git add .
+            git commit -m "Update benchmark results and logs (${{ github.event.repository.updated_at }}_${{ github.run_number }})"
+            git push origin main
+            git checkout gh-pages
+            cp -r ../html/* .
+            git add .
+            git commit -m "Update benchmark HTML (${{ github.event.repository.updated_at }}_${{ github.run_number }})"
+            git push origin gh-pages
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v4
         # If you're changing the branch from main,
