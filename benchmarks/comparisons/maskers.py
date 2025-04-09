@@ -3,7 +3,7 @@
 # ruff: noqa: RUF012
 
 from ..common import Benchmark
-from ..utils import apply_mask, load
+from ..utils import apply_mask, load, apply_mask_parallel
 
 
 class CompareMask(Benchmark):
@@ -27,3 +27,38 @@ class CompareMask(Benchmark):
         """Peak memory of loading and then masking."""
         mask, img = load(loader)
         apply_mask(mask, img, implementation)
+
+
+class CompareParallelMask(Benchmark):
+    """
+    Comparison between the performance of applying several masks to an
+    image by parallelizing nilearn masker objects vs. using numpy
+    """
+
+    param_names = [
+        "implementation",
+        "loader",
+    ]
+    params = (
+        ["nilearn", "numpy (ref)"],
+        ["nilearn", "nibabel (ref)"],
+    )
+
+    def setup_cache(self):
+        Benchmark.setup_cache(self, n_subjects=10, n_masks=4)
+
+    def time_masker(
+        self,
+        implementation,
+        loader,
+    ):
+        masks, img = load(loader, n_masks=4)
+        apply_mask_parallel(masks, img, implementation, n_jobs=4)
+
+    def peakmem_masker(
+        self,
+        implementation,
+        loader,
+    ):
+        masks, img = load(loader, n_masks=4)
+        apply_mask_parallel(masks, img, implementation, n_jobs=4)
