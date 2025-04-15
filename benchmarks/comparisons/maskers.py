@@ -54,13 +54,13 @@ class CompareParallelMask(Benchmark):
         implementation,
         loader,
     ):
-        masks, img = load(loader, n_masks=4)
-        apply_mask_parallel(masks, img, implementation, n_jobs=4)
+        masks, img = load(loader, n_masks=8)
+        apply_mask_parallel(masks, img, implementation, n_jobs=8)
 
     def peakmem_masker(
         self,
         implementation,
         loader,
     ):
-        masks, img = load(loader, n_masks=4)
-        apply_mask_parallel(masks, img, implementation, n_jobs=4)
+        masks, img = load(loader, n_masks=8)
+        apply_mask_parallel(masks, img, implementation, n_jobs=8)
