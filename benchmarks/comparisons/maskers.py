@@ -47,7 +47,7 @@ class CompareParallelMask(Benchmark):
     )
 
     def setup_cache(self):
-        Benchmark.setup_cache(self, n_subjects=10, n_masks=4)
+        Benchmark.setup_cache(self, n_subjects=10, n_masks=8)
 
     def time_masker(
         self,
