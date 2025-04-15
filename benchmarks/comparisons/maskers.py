@@ -35,6 +35,8 @@ class CompareParallelMask(Benchmark):
     image by parallelizing nilearn masker objects vs. using numpy
     """
 
+    timeout = 180
+
     param_names = [
         "implementation",
         "loader",
