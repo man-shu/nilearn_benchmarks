@@ -1,10 +1,20 @@
 """Utility functions for the benchmarks."""
 
+# At the top of utils.py
+import sys
+import os
+
+# Add the parent directory to Python path to make benchmarks importable
+sys.path.insert(
+    0, os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+)
+
 import nibabel as nib
 import numpy as np
 
 from nilearn.image import load_img
 from nilearn.maskers import NiftiMasker
+from joblib import Parallel, delayed
 
 
 def load(loader, n_masks=1, n_subjects=10):
@@ -70,3 +80,19 @@ def apply_mask(mask, img, implementation, nifti_masker_params=None):
         mask = np.asarray(mask.dataobj).astype(bool)
         img = np.asarray(img.dataobj)
         img[mask]
+
+
+def apply_mask_parallel(
+    masks,
+    img,
+    implementation,
+    nifti_masker_params=None,
+    n_jobs=2,
+):
+    """
+    Apply a list of masks to an image in parallel using joblib.
+    """
+    return Parallel(n_jobs=n_jobs, backend="loky")(
+        delayed(apply_mask)(mask, img, implementation, nifti_masker_params)
+        for mask in masks
+    )
